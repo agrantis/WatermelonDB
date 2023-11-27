@@ -206,6 +206,10 @@ export default class LokiJSAdapter implements DatabaseAdapter {
     this._dispatcher.call('unsafeExecute', [operations], callback)
   }
 
+  loadOrSaveDb(filePath: string, isSave: boolean, callback: ResultCallback<void>): void {
+    callback({ error: new Error('loadOrSaveDb unavailable on LokiJS') })
+  }
+
   getLocal(key: string, callback: ResultCallback<?string>): void {
     this._dispatcher.call('getLocal', [key], callback)
   }

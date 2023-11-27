@@ -68,6 +68,9 @@ export interface DatabaseAdapter {
   // Destroys the whole database, its schema, indexes, everything.
   unsafeResetDatabase(callback: ResultCallback<void>): void;
 
+  // Backup / restore db: load from or save into filePath
+  loadOrSaveDb(filePath: string, isSave: boolean, callback: ResultCallback<void>): void;
+
   // Performs work on the underlying database - see concrete DatabaseAdapter implementation for more details
   unsafeExecute(work: UnsafeExecuteOperations, callback: ResultCallback<void>): void;
 

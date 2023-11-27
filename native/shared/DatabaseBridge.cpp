@@ -180,6 +180,14 @@ void Database::install(jsi::Runtime *runtime) {
             database->batchJSON(args[0].getString(rt));
             return jsi::Value::undefined();
         });
+        createMethod(rt, adapter, "loadOrSaveDb", 2, [database](jsi::Runtime &rt, const jsi::Value *args) {
+            assert(database->initialized_);
+            jsi::String filePath = args[0].getString(rt);
+            int isSave = (int)args[1].asBool();
+
+            database->loadOrSaveDb(filePath, isSave);
+            return jsi::Value::undefined();
+        });
         createMethod(rt, adapter, "getLocal", 1, [database](jsi::Runtime &rt, const jsi::Value *args) {
             assert(database->initialized_);
             jsi::String key = args[0].getString(rt);

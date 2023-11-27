@@ -358,6 +358,10 @@ export default class SQLiteAdapter implements DatabaseAdapter {
     }
   }
 
+  loadOrSaveDb(filePath: string, isSave: boolean, callback: ResultCallback<void>): void {
+    this._dispatcher.call('loadOrSaveDb', [filePath, isSave], callback)
+  }
+
   getLocal(key: string, callback: ResultCallback<?string>): void {
     this._dispatcher.call('getLocal', [key], callback)
   }

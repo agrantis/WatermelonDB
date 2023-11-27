@@ -69,6 +69,9 @@ export interface DatabaseAdapter {
   // Performs work on the underlying database - see concrete DatabaseAdapter implementation for more details
   unsafeExecute(work: UnsafeExecuteOperations, callback: ResultCallback<void>): void
 
+  // Backup / restore db: load from or save into filePath
+  loadOrSaveDb(filePath: string, isSave: Boolean, callback: ResultCallback<void>): void;
+
   // Fetches string value from local storage
   getLocal(key: string, callback: ResultCallback<string | undefined>): void
 

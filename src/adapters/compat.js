@@ -85,6 +85,10 @@ export default class DatabaseAdapterCompat {
     return toPromise((callback) => this.underlyingAdapter.unsafeExecute(work, callback))
   }
 
+  loadOrSaveDb(filePath: string, isSave: boolean): Promise<void> {
+    return toPromise((callback) => this.underlyingAdapter.loadOrSaveDb(filePath, isSave, callback))
+  }
+
   getLocal(key: string): Promise<?string> {
     return toPromise((callback) => this.underlyingAdapter.getLocal(key, callback))
   }

@@ -87,6 +87,8 @@ export default class SQLiteAdapter implements DatabaseAdapter {
 
   unsafeExecute(operations: UnsafeExecuteOperations, callback: ResultCallback<void>): void
 
+  loadOrSaveDb(filePath: string, isSave: Boolean): Promise<void>
+
   getLocal(key: string, callback: ResultCallback<string | undefined>): void
 
   setLocal(key: string, value: string, callback: ResultCallback<void>): void
