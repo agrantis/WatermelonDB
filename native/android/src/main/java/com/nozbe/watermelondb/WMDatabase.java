@@ -21,7 +21,8 @@ public class WMDatabase {
     public static Map<String, WMDatabase> INSTANCES = new HashMap<>();
 
     public static WMDatabase getInstance(String name, Context context) {
-        return getInstance(name, context, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING);
+        return getInstance(name, context,
+                SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING);
     }
 
     public static WMDatabase getInstance(String name, Context context, int openFlags) {
@@ -42,11 +43,48 @@ public class WMDatabase {
         return new WMDatabase(sqLiteDatabase);
     }
 
+    private static String substringAfterLast(String text, char separator) {
+        if (isEmpty(text)) {
+            return text;
+        }
+        int cPos = text.lastIndexOf(separator);
+        if (cPos < 0) {
+            return "";
+        }
+        return text.substring(cPos + 1);
+    }
+
+    private static String substringBeforeLast(String text, char separator) {
+        if (isEmpty(text)) {
+            return text;
+        }
+        int cPos = text.lastIndexOf(separator);
+        if (cPos < 0) {
+            return text;
+        }
+        return text.substring(0, cPos);
+    }
+
     private static SQLiteDatabase createSQLiteDatabase(String name, Context context, int openFlags) {
         String path;
         if (name.equals(":memory:") || name.contains("mode=memory")) {
             context.getCacheDir().delete();
             path = new File(context.getCacheDir(), name).getPath();
+        } else if (name.startsWith("/") || name.startsWith("file")) {
+            // Extracts the database name from the path
+            var dbName = substringAfterLast(name, "/");
+            if (dbName.contains(".db")) {
+                // Extracts the real path where the *.db file will be created
+                var directory = substringBeforeLast(substringAfterLast(name, "file://"),
+                        "/");
+
+                // Creates the directory
+                var fileObj = new File(directory, "databases");
+                fileObj.mkdir();
+                path = new File("${directory}/databases", dbName).getPath();
+            } else {
+                throw new IllegalArgumentException("Database name should contain '.db' as extension");
+            }
         } else {
             // On some systems there is some kind of lock on `/databases` folder ¯\_(ツ)_/¯
             path = context.getDatabasePath("" + name + ".db").getPath().replace("/databases", "");
@@ -64,8 +102,10 @@ public class WMDatabase {
 
     public void unsafeExecuteStatements(String statements) {
         this.transaction(() -> {
-            // NOTE: This must NEVER be allowed to take user input - split by `;` is not grammar-aware
-            // and so is unsafe. Only works with Watermelon-generated strings known to be safe
+            // NOTE: This must NEVER be allowed to take user input - split by `;` is not
+            // grammar-aware
+            // and so is unsafe. Only works with Watermelon-generated strings known to be
+            // safe
             for (String statement : statements.split(";")) {
                 if (!statement.trim().isEmpty()) {
                     this.execute(statement);
@@ -87,8 +127,10 @@ public class WMDatabase {
     }
 
     public Cursor rawQuery(String sql, Object[] args) {
-        // HACK: db.rawQuery only supports String args, and there's no clean way AFAIK to construct
-        // a query with arbitrary args (like with execSQL). However, we can misuse cursor factory
+        // HACK: db.rawQuery only supports String args, and there's no clean way AFAIK
+        // to construct
+        // a query with arbitrary args (like with execSQL). However, we can misuse
+        // cursor factory
         // to get the reference of a SQLiteQuery before it's executed
         // https://github.com/aosp-mirror/platform_frameworks_base/blob/0799624dc7eb4b4641b4659af5b5ec4b9f80dd81/core/java/android/database/sqlite/SQLiteDirectCursorDriver.java#L30
         // https://github.com/aosp-mirror/platform_frameworks_base/blob/0799624dc7eb4b4641b4659af5b5ec4b9f80dd81/core/java/android/database/sqlite/SQLiteProgram.java#L32
@@ -107,12 +149,12 @@ public class WMDatabase {
                         } else if (arg == null) {
                             query.bindNull(i + 1);
                         } else {
-                            throw new IllegalArgumentException("Bad query arg type: " + arg.getClass().getCanonicalName());
+                            throw new IllegalArgumentException(
+                                    "Bad query arg type: " + arg.getClass().getCanonicalName());
                         }
                     }
                     return new SQLiteCursor(driver, editTable, query);
-                }, sql, rawArgs, null, null
-        );
+                }, sql, rawArgs, null, null);
     }
 
     public Cursor rawQuery(String sql) {
@@ -132,11 +174,11 @@ public class WMDatabase {
     }
 
     public int count(String query) {
-        return this.count(query, new Object[]{});
+        return this.count(query, new Object[] {});
     }
 
     public String getFromLocalStorage(String key) {
-        try (Cursor cursor = rawQuery(Queries.select_local_storage, new Object[]{key})) {
+        try (Cursor cursor = rawQuery(Queries.select_local_storage, new Object[] { key })) {
             cursor.moveToFirst();
             if (cursor.getCount() > 0) {
                 return cursor.getString(0);
